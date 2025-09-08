@@ -1,0 +1,304 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variables CSS para tema judío ortodoxo sionista */
+@layer base {
+  :root {
+    /* Colores principales del tema */
+    --tekhelet-blue: #0033CC;
+    --israel-blue: #0038B8;
+    --tallit-white: #FAFAFA;
+    --gold-accent: #FFD700;
+    --silver-accent: #C0C0C0;
+    
+    /* Variables de shadcn/ui */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+/* Estilos base para elementos HTML */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Estilos para texto hebreo */
+  .hebrew {
+    font-family: 'David', 'Frank Rühl CLM', 'Times New Roman', serif;
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: embed;
+  }
+
+  /* Estilos para elementos de formulario */
+  input, textarea, select {
+    @apply transition-all duration-200;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-2 ring-primary/20;
+  }
+
+  /* Estilos de scroll personalizado */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  }
+
+  /* Estilos para selección de texto */
+  ::selection {
+    @apply bg-primary/20 text-primary-foreground;
+  }
+}
+
+/* Componentes personalizados */
+@layer components {
+  /* Botones del tema judío ortodoxo */
+  .btn-orthodox {
+    @apply inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn-orthodox bg-tekhelet-blue text-white hover:bg-tekhelet-blue/90 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply btn-orthodox bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-gold {
+    @apply btn-orthodox bg-gold-accent text-gray-900 hover:bg-gold-accent/90 shadow-md hover:shadow-lg;
+  }
+
+  .btn-outline {
+    @apply btn-orthodox border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  /* Cards ortodoxas */
+  .card-orthodox {
+    @apply rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200;
+  }
+
+  .card-featured {
+    @apply card-orthodox border-primary/20 shadow-lg hover:shadow-xl bg-gradient-to-br from-white to-blue-50/30;
+  }
+
+  /* Inputs del tema */
+  .input-orthodox {
+    @apply flex h-12 w-full rounded-lg border border-input bg-background px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Layout principal */
+  .main-layout {
+    @apply min-h-screen bg-gradient-to-br from-tallit-white via-white to-blue-50/30;
+  }
+
+  /* Headers de sección */
+  .section-header {
+    @apply text-2xl md:text-3xl font-bold text-gray-900 mb-6;
+  }
+
+  .section-subheader {
+    @apply text-lg text-gray-600 mb-8 max-w-2xl;
+  }
+
+  /* Animaciones especiales */
+  .fade-in {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  /* Gradientes temáticos */
+  .gradient-israel {
+    background: linear-gradient(135deg, var(--israel-blue) 0%, var(--tekhelet-blue) 100%);
+  }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, var(--gold-accent) 0%, #FFA500 100%);
+  }
+
+  .gradient-prayer {
+    background: linear-gradient(135deg, var(--tallit-white) 0%, #F0F7FF 100%);
+  }
+
+  /* Estados de loading */
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Elementos específicos para educación halájica */
+  .quiz-card {
+    @apply card-orthodox p-6 hover:scale-[1.02] transition-transform duration-200;
+  }
+
+  .quiz-progress {
+    @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+  }
+
+  .quiz-progress-bar {
+    @apply h-full bg-gradient-to-r from-tekhelet-blue to-israel-blue transition-all duration-500 ease-out;
+  }
+
+  /* Elementos de noticias */
+  .news-card {
+    @apply card-orthodox overflow-hidden hover:scale-[1.01] transition-all duration-200;
+  }
+
+  .news-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary;
+  }
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+  /* Soporte RTL */
+  .rtl {
+    direction: rtl;
+  }
+
+  .ltr {
+    direction: ltr;
+  }
+
+  /* Texto responsivo */
+  .text-responsive {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+  }
+
+  .text-responsive-lg {
+    font-size: clamp(1.25rem, 3vw, 1.875rem);
+  }
+
+  .text-responsive-xl {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  /* Espaciado consistente */
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+
+  .container-padding {
+    @apply px-4 md:px-6 lg:px-8;
+  }
+}
+
+/* Animaciones keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive design específico para diseño ortodoxo */
+@media (max-width: 640px) {
+  .card-orthodox {
+    @apply mx-4;
+  }
+  
+  .section-padding {
+    @apply py-8;
+  }
+}
+
+/* Modo oscuro específico para la comunidad ortodoxa */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-orthodox {
+    @apply bg-gray-900 text-gray-100;
+  }
+  
+  .dark-mode-orthodox .card-orthodox {
+    @apply bg-gray-800 border-gray-700;
+  }
+}

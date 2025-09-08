@@ -1,0 +1,428 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =================================
+// MODELOS DE USUARIO Y AUTENTICACIÓN
+// =================================
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  emailVerified     DateTime?
+  password          String?
+  image             String?
+  role              Role        @default(USER)
+  status            UserStatus  @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  lastLogin         DateTime?
+  
+  // Relaciones
+  profile           UserProfile?
+  accounts          Account[]
+  sessions          Session[]
+  quizProgress      QuizProgress[]
+  quizAttempts      QuizAttempt[]
+  uploadedFiles     UploadedFile[]
+  emailLogs         EmailLog[]
+  
+  @@map("users")
+}
+
+model UserProfile {
+  id                    String            @id @default(cuid())
+  userId                String            @unique
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Información personal (cifrada)
+  firstNameEncrypted    String?
+  lastNameEncrypted     String?
+  phoneEncrypted        String?
+  birthDateEncrypted    String?
+  nationalityEncrypted  String?
+  addressEncrypted      String?
+  
+  // Información judía
+  jewishStatus          JewishStatus      @default(NOT_SPECIFIED)
+  conversionRabbi       String?
+  conversionCommunity   String?
+  betDin                String?
+  
+  // Motivación y conocimientos
+  motivationEncrypted   String?           @db.Text
+  hebrewLevel           Int               @default(0)
+  halajaKnowledge       Int               @default(0)
+  israelExperience      String?
+  profession            String?
+  education             String?
+  familyStatus          FamilyStatus      @default(SINGLE)
+  
+  // Preferencias
+  preferredLocation     String?
+  interestedPrograms    Json?
+  
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  
+  @@map("user_profiles")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// =================================
+// MODELOS DE CONTENIDO EDUCATIVO
+// =================================
+
+model QuizTopic {
+  id              String      @id @default(cuid())
+  title           String
+  titleHebrew     String?
+  description     String      @db.Text
+  level           Int         @default(1)
+  orderIndex      Int
+  isActive        Boolean     @default(true)
+  requiredScore   Int         @default(80)
+  
+  questions       Question[]
+  progress        QuizProgress[]
+  attempts        QuizAttempt[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("quiz_topics")
+}
+
+model Question {
+  id              String      @id @default(cuid())
+  topicId         String
+  topic           QuizTopic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  questionText    String      @db.Text
+  explanation     String      @db.Text
+  difficulty      Int         @default(1)
+  orderIndex      Int
+  isActive        Boolean     @default(true)
+  
+  answers         Answer[]
+  userAnswers     UserAnswer[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("questions")
+}
+
+model Answer {
+  id              String      @id @default(cuid())
+  questionId      String
+  question        Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  answerText      String      @db.Text
+  isCorrect       Boolean     @default(false)
+  orderIndex      Int
+  explanation     String?     @db.Text
+  
+  userAnswers     UserAnswer[]
+  
+  @@map("answers")
+}
+
+model QuizProgress {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId         String
+  topic           QuizTopic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  isCompleted     Boolean     @default(false)
+  bestScore       Int         @default(0)
+  attemptsCount   Int         @default(0)
+  unlockedAt      DateTime    @default(now())
+  completedAt     DateTime?
+  
+  @@unique([userId, topicId])
+  @@map("quiz_progress")
+}
+
+model QuizAttempt {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId         String
+  topic           QuizTopic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  score           Int         @default(0)
+  totalQuestions  Int
+  correctAnswers  Int         @default(0)
+  timeSpent       Int?        // en segundos
+  isCompleted     Boolean     @default(false)
+  
+  userAnswers     UserAnswer[]
+  
+  startedAt       DateTime    @default(now())
+  completedAt     DateTime?
+  
+  @@map("quiz_attempts")
+}
+
+model UserAnswer {
+  id              String      @id @default(cuid())
+  attemptId       String
+  attempt         QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerId        String?
+  answer          Answer?     @relation(fields: [answerId], references: [id], onDelete: SetNull)
+  
+  isCorrect       Boolean     @default(false)
+  timeSpent       Int?        // en segundos
+  
+  createdAt       DateTime    @default(now())
+  
+  @@map("user_answers")
+}
+
+// =================================
+// MODELOS DE NOTICIAS
+// =================================
+
+model NewsSource {
+  id              String      @id @default(cuid())
+  name            String      @unique
+  nameHebrew      String?
+  url             String
+  rssUrl          String?
+  type            SourceType  @default(RSS)
+  isActive        Boolean     @default(true)
+  lastFetched     DateTime?
+  
+  articles        Article[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("news_sources")
+}
+
+model Article {
+  id                  String      @id @default(cuid())
+  sourceId            String
+  source              NewsSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  
+  title               String      @db.Text
+  titleTranslated     String?     @db.Text
+  content             String?     @db.LongText
+  contentTranslated   String?     @db.LongText
+  summary             String?     @db.Text
+  summaryTranslated   String?     @db.Text
+  
+  url                 String      @unique
+  imageUrl            String?
+  author              String?
+  category            String?
+  tags                Json?
+  
+  publishedAt         DateTime
+  translatedAt        DateTime?
+  isTranslated        Boolean     @default(false)
+  isFeatured          Boolean     @default(false)
+  isActive            Boolean     @default(true)
+  
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  
+  @@index([publishedAt])
+  @@index([isActive, isFeatured])
+  @@map("articles")
+}
+
+// =================================
+// MODELOS DE ARCHIVOS Y UPLOADS
+// =================================
+
+model UploadedFile {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  filename        String
+  originalName    String
+  mimetype        String
+  size            Int
+  path            String
+  url             String?
+  
+  category        FileCategory @default(DOCUMENT)
+  isVerified      Boolean     @default(false)
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  
+  createdAt       DateTime    @default(now())
+  
+  @@map("uploaded_files")
+}
+
+// =================================
+// MODELOS DE COMUNICACIÓN
+// =================================
+
+model EmailTemplate {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  subject         String
+  content         String          @db.LongText
+  type            EmailType       @default(TRANSACTIONAL)
+  language        String          @default("es")
+  isActive        Boolean         @default(true)
+  
+  emailLogs       EmailLog[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("email_templates")
+}
+
+model EmailLog {
+  id              String          @id @default(cuid())
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  templateId      String?
+  template        EmailTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  
+  toEmail         String
+  fromEmail       String
+  subject         String
+  status          EmailStatus     @default(PENDING)
+  errorMessage    String?
+  
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_logs")
+}
+
+model NewsletterSubscriber {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  name            String?
+  isActive        Boolean         @default(true)
+  language        String          @default("es")
+  
+  subscribedAt    DateTime        @default(now())
+  unsubscribedAt  DateTime?
+  
+  @@map("newsletter_subscribers")
+}
+
+// =================================
+// ENUMS
+// =================================
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum JewishStatus {
+  NOT_SPECIFIED
+  BORN_JEWISH
+  CONVERTED_ORTHODOX
+  CONVERTED_CONSERVATIVE
+  CONVERTED_REFORM
+  NOT_JEWISH
+  IN_CONVERSION_PROCESS
+}
+
+enum FamilyStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+  ENGAGED
+}
+
+enum SourceType {
+  RSS
+  SCRAPE
+  API
+}
+
+enum FileCategory {
+  DOCUMENT
+  PHOTO
+  CERTIFICATE
+  OTHER
+}
+
+enum EmailType {
+  WELCOME
+  VERIFICATION
+  NEWSLETTER
+  NOTIFICATION
+  TRANSACTIONAL
+  MARKETING
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  OPENED
+  CLICKED
+}
